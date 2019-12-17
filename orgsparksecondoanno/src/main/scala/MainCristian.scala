@@ -11,9 +11,15 @@ object MainCristian {
     val sqlContext = new HiveContext(context)
     import sqlContext.implicits._
 
-    val dfJson = sqlContext.read.json("C:\\Users\\Studente\\Desktop\\filee.json")
+    val dfJson = sqlContext.read.json("C:\\Users\\Studente\\Desktop\\actor.json")
    // dfJson.show()
-    dfJson.dtypes.foreach(println)
+   dfJson.dtypes.foreach(println)
+    val rdd = dfJson.as[Actor].rdd
+
+    rdd.foreach(println)
+
+
+
 
 
   }
