@@ -27,5 +27,36 @@ class TraitsTest extends FlatSpec with Matchers {
 
     assert(true)
   }
+  "Org dataframe" should "convert correctly with org case class" in {
+    val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
+
+    val context = new SparkContext(sparkConf)
+    val sqlContext = new HiveContext(context)
+    import sqlContext.implicits._
+
+    val dFjson = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\Org\\org.json")
+    dFjson.dtypes.foreach(println)
+    val rdd = dFjson.as[Org].rdd
+
+    println(rdd.count())
+    assert(true)
+
+  }
+  "Repo dataframe" should "convert correctly with repo case class" in {
+    val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
+
+    val context = new SparkContext(sparkConf)
+    val sqlContext = new HiveContext(context)
+    import sqlContext.implicits._
+
+    val dFjson = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\TestSpark\\Repo")
+    dFjson.dtypes.foreach(println)
+    val rdd = dFjson.as[Repo].rdd
+
+    println(rdd.count())
+    assert(true)
+
+  }
+
 
 }
