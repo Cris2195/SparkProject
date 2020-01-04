@@ -15,11 +15,13 @@ object MainCristian {
     val context = new SparkContext(sparkConf)
     val sqlContext = new HiveContext(context)
     import sqlContext.implicits._
-downloadFile("http://data.githubarchive.org/2018-03-01-0.json.gz")
+//downloadFile("http://data.githubarchive.org/2018-03-01-0.json.gz")
     val dfJson = sqlContext.read.json(System.getProperty("user.dir")+"\\src\\main\\resources\\File.json")
 
    dfJson.dtypes.foreach(println)
-
+    dfJson.select($"Actor.*").show()
+    dfJson.groupBy($"type").count().show()
+    dfJson.select($"Actor",$"type").filter( dfJson.col("type").equalTo("WatchEvent")).show()
 
 
 
