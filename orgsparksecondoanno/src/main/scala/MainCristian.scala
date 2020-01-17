@@ -1,5 +1,6 @@
-import java.io.{BufferedInputStream, BufferedOutputStream, File, FileOutputStream}
+import java.io.{BufferedInputStream, BufferedOutputStream, File, FileInputStream, FileOutputStream}
 import java.net.{HttpURLConnection, URL}
+import java.util.Properties
 import java.util.zip.GZIPInputStream
 
 import org.apache.commons.io.IOUtils
@@ -7,6 +8,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.functions._
+import org.apache.spark.storage.StorageLevel
 object MainCristian {
   def main(args: Array[String]) {
 
@@ -14,20 +16,59 @@ object MainCristian {
 
     val context = new SparkContext(sparkConf)
     val sqlContext = new HiveContext(context)
+    context.hadoopConfiguration.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
+    context.hadoopConfiguration.set("parquet.enable.summary-metadata", "false")
     import sqlContext.implicits._
-//downloadFile("http://data.githubarchive.org/2018-03-01-0.json.gz")
+    val properties = loadProperties()
+  downloadFile("http://data.githubarchive.org/"+properties.getProperty(EnumString.anno.toString)+"-"+properties.getProperty(EnumString.mese.toString)+
+  "-"+properties.getProperty(EnumString.giorno.toString)+"-0"+".json.gz")
     val dfJson = sqlContext.read.json(System.getProperty("user.dir")+"\\src\\main\\resources\\File.json")
 
    dfJson.dtypes.foreach(println)
-    dfJson.select($"Actor.*").show()
-    dfJson.groupBy($"type").count().show()
-    dfJson.select($"Actor",$"type").filter( dfJson.col("type").equalTo("WatchEvent")).show()
+
+    //Distinct actor su file csv
+    val dataFrameSoloActor = dfJson.select($"Actor").distinct()
+    if(! new File(System.getProperty("user.dir")+"\\src\\main\\resources\\actor").exists())
+            dataFrameSoloActor.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir")+"\\src\\main\\resources\\actor")
+
+  //singoli author per commit su csv
+    val dfSoloAuthor=dfJson.select($"Payload.commits.author").distinct()
+    if(! new File(System.getProperty("user.dir")+"\\src\\main\\resources\\authorPerCommit").exists())
+          dfSoloAuthor.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir")+"\\src\\main\\resources\\authorPerCommit")
+
+
+    val dfSoloRepo = dfJson.select($"Repo").distinct()
+    if(! new File(System.getProperty("user.dir")+"\\src\\main\\resources\\repoSingoli").exists())
+        dfSoloRepo.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir")+"\\src\\main\\resources\\repoSingoli")
+
+
+    val dfTipiEvento = dfJson.select($"Type").distinct()
+    if(! new File(System.getProperty("user.dir")+"\\src\\main\\resources\\eventi").exists())
+        dfTipiEvento.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir")+"\\src\\main\\resources\\eventi")
+
+
+    //Numero di actor
+    println(dfJson.select($"Actor").count())
+    //Numero di repo
+    println(dfJson.select(dfJson.col("Repo")).count())
+
+    //Numero di event per ogni actor e type
+    dfJson.registerTempTable("tabella")
+    sqlContext.sql("select Type , count(Type),Actor  from tabella   group by Type,Actor ").show()
 
 
 
 
 
 
+
+
+  }
+
+  def loadProperties(): Properties ={
+    val prop = new Properties()
+    prop.load(new FileInputStream(new File(System.getProperty("user.dir")+"\\src\\main\\resources\\application.properties")))
+    prop
   }
   def downloadFile(url : String): Unit ={
     val realUrl : URL = new URL(url)

@@ -7,6 +7,17 @@
     <groupId>org.spark</groupId>
     <artifactId>org.spark.secondoanno</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M4</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -22,6 +33,17 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_2.10</artifactId>
             <version>1.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.10</artifactId>
+            <version>3.1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.databricks</groupId>
+            <artifactId>spark-csv_2.11</artifactId>
+            <version>1.3.2</version>
         </dependency>
     </dependencies>
 
