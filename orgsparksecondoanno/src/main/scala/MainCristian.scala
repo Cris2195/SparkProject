@@ -60,7 +60,7 @@ object MainCristian {
     dfJson.select($"Type",$"Actor").groupBy($"Actor",$"Type").count().show(12)
 
     //Numero di event per ogni actor e type e repo
-    dfJson.registerTempTable("tabella")
+    dfJson.createOrReplaceTempView("tabella")
     sqlContext.sql("select Type , count(Type),Actor,Repo  from tabella   group by Type,Actor, Repo ")
 
 
