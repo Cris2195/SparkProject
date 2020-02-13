@@ -8,7 +8,7 @@ import org.apache.spark.sql.hive.HiveContext
 import collection.mutable.Stack
 import org.scalatest._
 
-class TraitsTest extends FlatSpec with Matchers {
+/*class TraitsTest extends FlatSpec with Matchers {
 
   "Actor dataframe" should "convert correctly with Actor case class" in {
     val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
@@ -59,4 +59,4 @@ class TraitsTest extends FlatSpec with Matchers {
   }
 
 
-}
+}*/

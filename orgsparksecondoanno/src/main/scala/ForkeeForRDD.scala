@@ -1,4 +1,4 @@
-class Forkee(
+class ForkeeForRDD(
                    val archive_url:String,
                    val archived:java.lang.Boolean,
                    val assignees_url:String,
@@ -50,7 +50,9 @@ class Forkee(
                    val notifications_url:String,
                    val open_issues:BigInt,
                    val open_issues_count:BigInt,
-                   val owner:Owner,
+                   val owner:OwnerForRDD,
+                   //val private_field:java.lang.Boolean,
+                   //val public_field:java.lang.Boolean,
                    val pulls_url:String,
                    val pushed_at:String,
                    val releases_url:String,
@@ -74,8 +76,8 @@ class Forkee(
 
 
                  )extends Product with Serializable{
-  def canEqual(that: Any) = that.isInstanceOf[Forkee]
-  def productArity = 72 // number of columns
+  def canEqual(that: Any) = that.isInstanceOf[ForkeeForRDD]
+  def productArity = 70 // number of columns
 
   def productElement(idx: Int) = idx match {
     case 0 => archive_url
@@ -130,6 +132,8 @@ class Forkee(
     case 49=> open_issues
     case 50=> open_issues_count
     case 51=> owner
+    //case 52=> private_field
+    //case 53=> public_field
     case 52=> pulls_url
     case 53=> pushed_at
     case 54=> releases_url

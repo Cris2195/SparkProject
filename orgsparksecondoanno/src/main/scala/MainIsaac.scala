@@ -22,10 +22,10 @@ object MainIsaac {
    val rdd = dFjson.as[Org].rdd
    rdd.foreach(x => println(x.toString))*/
 
-   val jsonDf = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\TestSpark\\Repo")
+   /*val jsonDf = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\TestSpark\\Repo")
    jsonDf.dtypes.foreach(println)
    val rdd = jsonDf.as[Repo].rdd
-   rdd.foreach(x => println(x.toString))
+   rdd.foreach(x => println(x.toString))*/
 
 
   }

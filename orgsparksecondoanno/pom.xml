@@ -7,43 +7,77 @@
     <groupId>org.spark</groupId>
     <artifactId>org.spark.secondoanno</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <build>
-        <pluginManagement>
+
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.0.0-M4</version>
                 </plugin>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.2</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compile</goal>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <scalaVersion>2.11</scalaVersion>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.4.1</version>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
-        </pluginManagement>
     </build>
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
+            <artifactId>spark-core_2.11</artifactId>
             <version>2.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.10</artifactId>
+            <artifactId>spark-sql_2.11</artifactId>
             <version>2.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_2.10</artifactId>
+            <artifactId>spark-hive_2.11</artifactId>
             <version>2.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.10</artifactId>
+            <artifactId>scalatest_2.11</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.databricks</groupId>
-            <artifactId>spark-csv_2.11</artifactId>
-            <version>1.3.2</version>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>3.10</version>
         </dependency>
     </dependencies>
 

@@ -3,48 +3,62 @@ import java.net.{HttpURLConnection, URL}
 import java.util.Properties
 import java.util.zip.GZIPInputStream
 
+import com.opencsv.CSVWriter
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.{CoGroupedRDD, HadoopRDD, JdbcRDD, NewHadoopRDD, PartitionPruningRDD, ShuffledRDD, UnionRDD}
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.execution.ShuffledRowRDD
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.{SparkConf, SparkContext}
+import java.io.Writer
+import java.nio.file.Files
+import java.nio.file.Paths
+
+import org.apache.spark.sql.catalyst.ScalaReflection
 object MainCristian {
   def main(args: Array[String]) {
-
-    val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
+    val sparkProperties = loadSparkProperties()
+    val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject").set("spark.debug.maxToStringFields","1000")
 
     val context = new SparkContext(sparkConf)
+
     val sqlContext = new HiveContext(context)
-    context.hadoopConfiguration.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
-    context.hadoopConfiguration.set("parquet.enable.summary-metadata", "false")
-    import sqlContext.implicits._
-    val properties = loadProperties()
-    downloadFile("http://data.githubarchive.org/"+properties.getProperty(EnumString.anno.toString)+"-"+properties.getProperty(EnumString.mese.toString)+
-    "-"+properties.getProperty(EnumString.giorno.toString)+"-0"+".json.gz")
-    val dfJson = sqlContext.read.json(System.getProperty("user.dir") + "\\src\\main\\resources\\File.json")
-    dfJson.dtypes.foreach(println)
+    val spark = SparkSession
+      .builder().config(sparkConf).getOrCreate()
 
+    import spark.implicits._
+    //context.hadoopConfiguration.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
+    //context.hadoopConfiguration.set("parquet.enable.summary-metadata", "false")
+   // import sqlContext.implicits._
+    val properties = loadApplicationProperties()
+   // downloadFile("http://data.githubarchive.org/"+properties.getProperty(EnumString.anno.toString)+"-"+properties.getProperty(EnumString.mese.toString)+
+  //  "-"+properties.getProperty(EnumString.giorno.toString)+"-0"+".json.gz")
 
+    val schema = ScalaReflection.schemaFor[WrapperForStruct].dataType.asInstanceOf[StructType]
+    val dfJson = sqlContext.read
+        .schema(schema)
+      .json(System.getProperty("user.dir") + "\\src\\main\\resources\\File.json")
+
+dfJson.dtypes.foreach(println)
     //Distinct actor su file csv
-    val dataFrameSoloActor = dfJson.select($"Actor").distinct()
-    if (!new File(System.getProperty("user.dir") + "\\src\\main\\resources\\actor").exists())
-      dataFrameSoloActor.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir") + "\\src\\main\\resources\\actor")
-
+    val dataFrameSoloActor = dfJson.distinct().as[Wrapper].rdd
+    dataFrameSoloActor.collect().foreach(println)
+   // dataFrameSoloActor.show()
+  //saveOnCsvFile(dataFrameSoloActor,"actor")
 
     //singoli author per commit su csv
-    val dfSoloAuthor = dfJson.select($"Payload.commits.author").distinct()
-    if (!new File(System.getProperty("user.dir") + "\\src\\main\\resources\\authorPerCommit").exists())
-      dfSoloAuthor.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir") + "\\src\\main\\resources\\authorPerCommit")
+  /*  val dfSoloAuthor = dfJson.select($"Payload.commits.author")
+   saveOnCsvFile(dfSoloAuthor,"author")
 
 
-    val dfSoloRepo = dfJson.select($"Repo").distinct()
-    if (!new File(System.getProperty("user.dir") + "\\src\\main\\resources\\repoSingoli").exists())
-      dfSoloRepo.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir") + "\\src\\main\\resources\\repoSingoli")
+    val dfSoloRepo = dfJson.select($"Repo")
 
 
-    val dfTipiEvento = dfJson.select($"Type").distinct()
+
+
+
+    val dfTipiEvento = dfJson.select($"Type").distinct().map(x => {x.toString()})
     if (!new File(System.getProperty("user.dir") + "\\src\\main\\resources\\eventi").exists())
       dfTipiEvento.coalesce(1).write.format("com.databricks.spark.csv").save(System.getProperty("user.dir") + "\\src\\main\\resources\\eventi")
 
@@ -55,7 +69,7 @@ object MainCristian {
     println(dfJson.select(dfJson.col("Repo")).count())
 
     //numero di event per ogni actor
-  dfJson.select($"Type",$"Actor").groupBy($"Actor").count().show(10)
+    dfJson.select($"Type",$"Actor").groupBy($"Actor").count().show(10)
 //numero di event per ogni actor e type
     dfJson.select($"Type",$"Actor").groupBy($"Actor",$"Type").count().show(12)
 
@@ -63,15 +77,35 @@ object MainCristian {
     dfJson.createOrReplaceTempView("tabella")
     sqlContext.sql("select Type , count(Type),Actor,Repo  from tabella   group by Type,Actor, Repo ")
 
-
+*/
 
 
   }
 
-  def loadProperties(): Properties = {
+  def loadApplicationProperties(): Properties = {
     val prop = new Properties()
     prop.load(new FileInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\resources\\application.properties")))
     prop
+  }
+  def loadSparkProperties(): Properties = {
+    val prop = new Properties()
+    prop.load(new FileInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\resources\\spark.properties")))
+    prop
+  }
+
+
+
+  def saveOnCsvFile(datasource:DataFrame , path:String): Unit ={
+    val writer = Files.newBufferedWriter(Paths.get(System.getProperty("user.dir")+"\\src\\main\\resources\\"+path+".csv"))
+    val csvWriter : CSVWriter = new CSVWriter(writer,
+      CSVWriter.DEFAULT_SEPARATOR,
+      CSVWriter.NO_QUOTE_CHARACTER,
+      CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+      CSVWriter.DEFAULT_LINE_END)
+    val dataTosave = datasource.collect().map(x => x.toString())
+    csvWriter.writeNext(dataTosave)
+    csvWriter.close()
+
   }
 
   def downloadFile(url: String): Unit = {
@@ -109,6 +143,7 @@ object MainCristian {
       }
     }
   }
+
 }
 
 

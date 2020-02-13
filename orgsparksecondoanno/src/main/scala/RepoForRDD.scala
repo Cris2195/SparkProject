@@ -1,4 +1,4 @@
-class Repo(
+class RepoForRDD(
          val archive_url : String,
          val archived : java.lang.Boolean,
          val assignees_url : String,
@@ -50,7 +50,8 @@ class Repo(
          val notifications_url:String,
          val open_issues:BigInt,
          val open_issues_count:BigInt,
-         val owner: Owner,
+         val owner: OwnerForRDD,
+         //val private_field:java.lang.Boolean,
          val pulls_url:String,
          val pushed_at :String,
          val releases_url:String,
@@ -70,8 +71,8 @@ class Repo(
          val  watchers:BigInt,
          val  watchers_count:BigInt
           ) extends Product with Serializable {
-           def canEqual(that: Any) = that.isInstanceOf[Repo]
-           def productArity = 71 // number of columns
+           def canEqual(that: Any) = that.isInstanceOf[RepoForRDD]
+           def productArity = 70 // number of columns
 
       def productElement(idx: Int) = idx match {
 
@@ -127,6 +128,7 @@ case 48=> notifications_url
 case 49=> open_issues
 case 50=> open_issues_count
 case 51=> owner
+//case 52=> private_field
 case 52=> pulls_url
 case 53=> pushed_at
 case 54=> releases_url
@@ -145,7 +147,6 @@ case 66=> updated_at
 case 67=> url
 case 68=> watchers
 case 69=> watchers_count
-
 
       }
 
