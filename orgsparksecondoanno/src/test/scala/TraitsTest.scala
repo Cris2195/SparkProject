@@ -10,7 +10,7 @@ import org.scalatest._
 
 /*class TraitsTest extends FlatSpec with Matchers {
 
-  "Actor dataframe" should "convert correctly with Actor case class" in {
+  "com.progetto.Actor dataframe" should "convert correctly with com.progetto.Actor case class" in {
     val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
 
     val context = new SparkContext(sparkConf)
@@ -20,38 +20,38 @@ import org.scalatest._
     val dfJson = sqlContext.read.json("C:\\Users\\Studente\\Desktop\\actor.json")
     // dfJson.show()
     dfJson.dtypes.foreach(println)
-    val rdd = dfJson.as[Actor].rdd
+    val rdd = dfJson.as[com.progetto.Actor].rdd
 
     println(rdd.count())
 
 
     assert(true)
   }
-  "Org dataframe" should "convert correctly with org case class" in {
+  "com.progetto.Org dataframe" should "convert correctly with org case class" in {
     val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
 
     val context = new SparkContext(sparkConf)
     val sqlContext = new HiveContext(context)
     import sqlContext.implicits._
 
-    val dFjson = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\Org\\org.json")
+    val dFjson = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\com.progetto.Org\\org.json")
     dFjson.dtypes.foreach(println)
-    val rdd = dFjson.as[Org].rdd
+    val rdd = dFjson.as[com.progetto.Org].rdd
 
     println(rdd.count())
     assert(true)
 
   }
-  "Repo dataframe" should "convert correctly with repo case class" in {
+  "com.progetto.Repo dataframe" should "convert correctly with repo case class" in {
     val sparkConf = new SparkConf().setMaster("local[2]").setAppName("SparkProject")
 
     val context = new SparkContext(sparkConf)
     val sqlContext = new HiveContext(context)
     import sqlContext.implicits._
 
-    val dFjson = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\TestSpark\\Repo")
+    val dFjson = sqlContext.read.json("C:\\Users\\quiaz\\Desktop\\TestSpark\\com.progetto.Repo")
     dFjson.dtypes.foreach(println)
-    val rdd = dFjson.as[Repo].rdd
+    val rdd = dFjson.as[com.progetto.Repo].rdd
 
     println(rdd.count())
     assert(true)
