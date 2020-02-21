@@ -15,7 +15,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.reflect.ClassTag
-
+import org.apache.spark.sql.functions._
 object MainCristian {
   def main(args: Array[String]) {
     val sparkProperties = loadSparkProperties()
@@ -29,8 +29,8 @@ object MainCristian {
     import spark.implicits._
 
     val properties = loadApplicationProperties()
-    // downloadFile("http://data.githubarchive.org/"+properties.getProperty(EnumString.anno.toString)+"-"+properties.getProperty(EnumString.mese.toString)+
-    //  "-"+properties.getProperty(EnumString.giorno.toString)+"-0"+".json.gz")
+    downloadFile("http://data.githubarchive.org/"+properties.getProperty(EnumString.anno.toString)+"-"+properties.getProperty(EnumString.mese.toString)+
+      "-"+properties.getProperty(EnumString.giorno.toString)+"-0"+".json.gz")
 
     val schema = ScalaReflection.schemaFor[WrapperForStruct].dataType.asInstanceOf[StructType]
     val dfJson = spark.read
@@ -95,6 +95,12 @@ object MainCristian {
 
     //numero di event per ogni actor e type
     dfJson.select($"Type", $"Actor").groupBy($"Actor", $"Type").count().show(12)
+
+val timeStamp =  rdd.filter(x => x.created_at!=null).flatMap(x => x.created_at.split("Z"))
+  //numero massimo di event per ora
+    dfJson.select($"type",$"created_at").groupBy($"created_at").count().agg(max($"count")).show(10)
+val rddMax =    rdd.filter(x => x.`type`!=null && x.created_at!=null).map(x => (x.`type`,x.created_at)).groupByKey().map(x => (x._1,1)).reduceByKey((x,y)=>x+y)
+
 
 
 
